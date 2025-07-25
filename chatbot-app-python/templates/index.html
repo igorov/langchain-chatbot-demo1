@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'slate-900': '#0f172a',
+                        'slate-800': '#1e293b',
+                        'blue-900': '#1e3a8a',
+                        'cyan-400': '#22d3ee',
+                        'blue-500': '#3b82f6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="min-h-screen flex items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-md">
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-lg">
+                <div class="text-center space-y-4 p-6">
+                    <div class="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center">
+                        <i class="fas fa-comments text-white text-2xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white">Bienvenido al Chat Bot</h1>
+                    <p class="text-gray-300">Para comenzar, por favor identifícate con tu nombre</p>
+                </div>
+                <div class="p-6">
+                    <form id="login-form-element" class="space-y-6">
+                        <div class="space-y-2">
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input
+                                    type="text"
+                                    id="username-input"
+                                    placeholder="Ingresa tu nombre"
+                                    class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <button
+                            type="submit"
+                            id="login-button"
+                            class="w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-medium py-3 px-4 rounded-lg hover:from-blue-600 hover:to-cyan-500 transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                        >
+                            <span id="login-button-text">Comenzar Chat</span>
+                            <i id="login-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat-interface" class="h-screen p-4 flex flex-col overflow-hidden hidden">
+        <div class="max-w-4xl w-full mx-auto flex flex-col h-full overflow-hidden">
+            <!-- Header -->
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg mb-4 flex-shrink-0 rounded-lg">
+                <div class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-white"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-white text-lg font-semibold">Chat Bot Assistant</h1>
+                                <p class="text-gray-300 text-sm">Conectado como: <span id="current-user"></span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button
+                                id="refresh-button"
+                                class="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                title="Actualizar historial"
+                            >
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button
+                                id="clear-history-button"
+                                class="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                title="Limpiar historial"
+                            >
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button
+                                id="logout-button"
+                                class="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                title="Cerrar sesión"
+                            >
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="flex-1 overflow-hidden bg-white/5 backdrop-blur-lg border border-white/20 rounded-lg">
+                <div id="messages-container" class="h-full overflow-y-auto p-4 space-y-4">
+                    <!-- Messages will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Input Form -->
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg mt-4 flex-shrink-0 rounded-lg">
+                <form id="chat-form" class="p-4">
+                    <div class="flex space-x-3">
+                        <input
+                            type="text"
+                            id="message-input"
+                            placeholder="Escribe tu mensaje..."
+                            class="flex-1 px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all"
+                            required
+                        />
+                        <button
+                            type="submit"
+                            id="send-button"
+                            class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-lg hover:from-blue-600 hover:to-cyan-500 transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <i id="send-icon" class="fas fa-paper-plane"></i>
+                            <i id="send-spinner" class="fas fa-spinner fa-spin hidden"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

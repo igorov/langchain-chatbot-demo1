@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  chatbot-app:
+    build: .
+    container_name: chatbot-app-python
+    ports:
+      - "5000:5000"
+    environment:
+      - CHATBOT_API_BASE_URL=http://localhost:8080
+      - SECRET_KEY=chatbot-secret-key-2025
+    volumes:
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    networks:
+      - chatbot-network
+
+networks:
+  chatbot-network:
+    driver: bridge
