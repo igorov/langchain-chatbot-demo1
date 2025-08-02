@@ -196,6 +196,68 @@ Esta implementación ha sido actualizada de las clases deprecadas de LangChain 0
 - Compatible con LangChain 0.3+ ✅
 - Sin advertencias de deprecación ✅
 
+## Despliegue en Google Cloud Run
+
+### Construcción y despliegue
+
+1. **Construir la imagen Docker**:
+```bash
+docker build -t gcr.io/tu-proyecto/chatbot-langchain .
+```
+
+2. **Subir la imagen a Container Registry**:
+```bash
+docker push gcr.io/tu-proyecto/chatbot-langchain
+```
+
+3. **Desplegar en Cloud Run**:
+```bash
+gcloud run deploy chatbot-langchain \
+  --image gcr.io/tu-proyecto/chatbot-langchain \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars "MODEL_PROVIDER=openai,MODEL_TEMPERATURE=0.7,OPENAI_API_KEY=tu-api-key-aqui"
+```
+
+### Variables de entorno requeridas en Cloud Run
+
+**Para OpenAI (recomendado)**:
+```bash
+MODEL_PROVIDER=openai
+MODEL_TEMPERATURE=0.7
+OPENAI_API_KEY=tu-openai-api-key-aqui
+```
+
+**Para NVIDIA**:
+```bash
+MODEL_PROVIDER=nvidia
+MODEL_TEMPERATURE=0.7
+NVIDIA_API_KEY=tu-nvidia-api-key-aqui
+```
+
+### Configuración desde la Consola de Google Cloud
+
+1. Ve a Cloud Run en Google Cloud Console
+2. Selecciona tu servicio
+3. Haz clic en "Editar y desplegar nueva revisión"
+4. En la pestaña "Variables y secretos", agrega:
+   - `OPENAI_API_KEY`: Tu clave de API de OpenAI
+   - `MODEL_PROVIDER`: `openai` (o `nvidia`)
+   - `MODEL_TEMPERATURE`: `0.7`
+
+### Solución de problemas comunes
+
+**Error de validación de Pydantic**:
+- Asegúrate de que `MODEL_TEMPERATURE` sea un número (ej: `0.7`, no `"0.7"`)
+- Verifica que `OPENAI_API_KEY` esté correctamente configurada
+
+**Error de API Key faltante**:
+```
+OPENAI_API_KEY no está configurada. Asegúrate de definir esta variable de entorno en Cloud Run.
+```
+- Configura la variable `OPENAI_API_KEY` en Cloud Run con tu clave real de OpenAI
+
 ## Documentación API
 
 Una vez ejecutado el servidor, la documentación interactiva estará disponible en:

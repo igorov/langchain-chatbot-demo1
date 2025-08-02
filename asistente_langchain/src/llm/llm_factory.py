@@ -10,7 +10,13 @@ class LLMProvider(Enum):
 
 class LLMFactory:
     def __init__(self):
-        temperature = os.getenv("MODEL_TEMPERATURE")
+        # Convertir temperature a float con valor por defecto
+        temperature_str = os.getenv("MODEL_TEMPERATURE", "0.7")
+        try:
+            temperature = float(temperature_str)
+        except (ValueError, TypeError):
+            temperature = 0.7  # Valor por defecto
+            
         self.default_configs = {
             LLMProvider.NVIDIA: {
                 "model": "meta/llama-4-maverick-17b-128e-instruct",
@@ -41,11 +47,14 @@ class LLMFactory:
         # Crear el modelo correspondiente
         if provider == LLMProvider.NVIDIA:
             if not os.getenv("NVIDIA_API_KEY"):
-                raise ValueError("NVIDIA_API_KEY no está configurada")
+                raise ValueError("NVIDIA_API_KEY no está configurada. Asegúrate de definir esta variable de entorno en Cloud Run.")
             return ChatNVIDIA(**config)
         elif provider == LLMProvider.OPENAI:
             if not os.getenv("OPENAI_API_KEY"):
-                raise ValueError("OPENAI_API_KEY no está configurada")
-            return ChatOpenAI(**config)
+                raise ValueError("OPENAI_API_KEY no está configurada. Asegúrate de definir esta variable de entorno en Cloud Run.")
+            try:
+                return ChatOpenAI(**config)
+            except Exception as e:
+                raise ValueError(f"Error al crear ChatOpenAI con config {config}: {str(e)}")
         else:
             raise ValueError(f"Proveedor no soportado: {provider}")

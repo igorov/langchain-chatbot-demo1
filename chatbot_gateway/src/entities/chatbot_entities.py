@@ -6,11 +6,9 @@ class MessagePayload(BaseModel):
     timestamp: int
     from_: str = Field(alias="from")
     fromMe: bool
-    to: str
     body: str
     hasMedia: bool
     ack: int
-    vCards: List[str]
     _data: Dict[str, Any]
 
 class WahaRequest(BaseModel):
