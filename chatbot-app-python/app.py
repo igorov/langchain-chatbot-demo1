@@ -68,16 +68,16 @@ def chat():
         return jsonify({'error': 'Not authenticated'}), 401
     
     data = request.get_json()
-    user_message = data.get('message', '').strip()
-    username = session['username']
+    user_question = data.get('question', '').strip()
+    username = data.get('user', session.get('username', ''))
     
-    if not user_message:
-        return jsonify({'error': 'Message is required'}), 400
+    if not user_question:
+        return jsonify({'error': 'Question is required'}), 400
     
     try:
         # Send message to external chatbot API
         chat_payload = {
-            "question": user_message,
+            "question": user_question,
             "user": username
         }
         
@@ -85,7 +85,7 @@ def chat():
             f"{CHATBOT_API_BASE_URL}/api/chatbot",
             json=chat_payload,
             headers={'Content-Type': 'application/json'},
-            timeout=30
+            timeout=60  # Aumentar timeout a 60 segundos
         )
         
         if chat_response.status_code == 200:

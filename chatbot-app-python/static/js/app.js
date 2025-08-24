@@ -126,7 +126,10 @@ class ChatApp {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message }),
+                body: JSON.stringify({ 
+                    question: message,
+                    user: this.currentUser 
+                }),
             });
             
             const data = await response.json();
@@ -219,13 +222,12 @@ class ChatApp {
         this.messagesContainer.innerHTML = '';
         
         this.messages.forEach(message => {
-            // Handle both old format (role/content) and new API format (role/content)
             const role = message.role;
             const content = message.content;
             this.addMessageToDOM(role, content, false);
         });
         
-        this.scrollToBottom();
+        this.scrollToBottomForced();
     }
     
     addMessage(role, content) {
@@ -345,11 +347,53 @@ class ChatApp {
             this.sendSpinner.classList.add('hidden');
         }
     }
+
+    setRefreshLoading(loading) {
+        this.refreshButton.disabled = loading;
+        
+        if (loading) {
+            // Cambiar icono del botón refresh por un spinner
+            const icon = this.refreshButton.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-spinner fa-spin';
+            }
+            this.refreshButton.title = 'Actualizando historial...';
+            console.log('🔄 Cargando historial...');
+        } else {
+            // Restaurar icono original
+            const icon = this.refreshButton.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-sync-alt';
+            }
+            this.refreshButton.title = 'Actualizar historial';
+            console.log('✅ Historial actualizado');
+        }
+    }
     
     scrollToBottom() {
         setTimeout(() => {
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
         }, 100);
+    }
+
+    scrollToBottomForced() {
+        // Múltiples intentos para asegurar que el scroll funcione
+        const scrollToEnd = () => {
+            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        };
+        
+        // Scroll inmediato
+        scrollToEnd();
+        
+        // Scroll con timeouts escalonados para asegurar que funcione
+        setTimeout(scrollToEnd, 50);
+        setTimeout(scrollToEnd, 150);
+        setTimeout(scrollToEnd, 300);
+        
+        // Usar requestAnimationFrame para scroll suave
+        requestAnimationFrame(() => {
+            requestAnimationFrame(scrollToEnd);
+        });
     }
     
     showError(message) {
